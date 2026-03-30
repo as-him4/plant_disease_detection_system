@@ -1,0 +1,115 @@
+{% load static %}
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Login Page</title>
+    <link rel="stylesheet" href="{% static 'css/style.css' %}" />
+  </head>
+
+  <body class="login-page">
+    <div class="container">
+      <!-- Login part -->
+      <div class="form-box active" id="login-form">
+        <form id="loginFormEl">
+          {% csrf_token %}
+          <h2>Login</h2>
+
+          <div id="login-error" class="form-error" style="display: none"></div>
+
+          <input
+            type="text"
+            name="emailOrUsername"
+            placeholder="Email or Username"
+            required
+          />
+          <input
+            type="password"
+            name="password"
+            placeholder="Password"
+            required
+          />
+
+          <p style="text-align: right">
+            <a href="{% url 'password_reset_request' %}">Forgot Password?</a>
+          </p>
+
+          <button type="submit">Login</button>
+
+          <p>
+            Don't have an account?
+            <a href="#" onclick="showForm('register-form')">Register</a>
+          </p>
+        </form>
+      </div>
+
+      <!-- register form part -->
+      <div class="form-box" id="register-form">
+        <form id="registerFormEl">
+          {% csrf_token %}
+          <h2>Register</h2>
+
+          <div
+            id="register-error"
+            class="form-error"
+            style="display: none"
+          ></div>
+          <div
+            id="register-success"
+            class="form-success"
+            style="display: none"
+          ></div>
+
+          <input
+            type="text"
+            name="first_name"
+            placeholder="First Name"
+            required
+          />
+          <input
+            type="text"
+            name="last_name"
+            placeholder="Last Name"
+            required
+          />
+          <input type="email" name="email" placeholder="Email" required />
+          <input
+            type="tel"
+            name="phoneNumber"
+            placeholder="Mobile number"
+            required
+          />
+          <input type="text" name="username" placeholder="Username" required />
+          <input
+            type="password"
+            name="password"
+            placeholder="Password"
+            required
+          />
+          <input
+            type="password"
+            name="confirmpassword"
+            placeholder="Confirm Password"
+            required
+          />
+
+          <button type="submit">Register</button>
+
+          <p>
+            Already have an account?
+            <a href="#" onclick="showForm('login-form')">Login</a>
+          </p>
+        </form>
+      </div>
+    </div>
+</div>
+
+    <script>
+        const CSRF_TOKEN = "{{ csrf_token }}";
+    </script>
+    <script src="{% static 'js/script.js' %}"></script>
+
+</body>
+</html>
+    

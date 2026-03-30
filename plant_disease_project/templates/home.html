@@ -1,0 +1,132 @@
+{% load static %}
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
+    />
+    <title>Plant Disease Detection</title>
+
+    <link rel="stylesheet" href="{% static 'css/style.css' %}" />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"
+    />
+
+    <!-- Pass Django CSRF token and username to JavaScript -->
+    <script>
+      const CSRF_TOKEN = "{{ csrf_token }}";
+    </script>
+  </head>
+
+  <body>
+    <!-- main header / nav bar -->
+    <section class="header">
+      <nav>
+        <a href="{% url 'home' %}"
+          ><img src="{% static 'images/logo.png' %}"
+        /></a>
+
+        <div class="nav-links" id="navLinks">
+          <i class="fa-solid fa-xmark" onclick="hideMenu()"></i>
+          <ul>
+            <li><a href="#upload">HOME</a></li>
+            <li><a href="#about">ABOUT</a></li>
+            <li><a href="#contact">CONTACT</a></li>
+          </ul>
+        </div>
+
+        <!-- creating user activity session -->
+        <div class="user-session">
+          <img src="{% static 'images/user.png' %}" id="userIcon" />
+
+          <div class="user-dropdown" id="userDropdown">
+            <p>Hi, {{ user.first_name|default:user.username }}</p>
+            <a href="{% url 'logout' %}" id="logoutBtn">
+              Logout <i class="fa fa-sign-out" aria-hidden="true"></i>
+            </a>
+          </div>
+        </div>
+
+        <i class="fa-solid fa-bars" onclick="showMenu()"></i>
+      </nav>
+
+      <!-- main home page section -->
+
+      <div class="hero-text">
+        <h1>Plant Leaf Disease Detection</h1>
+        <p>Upload a leaf image and detect disease instantly using AI</p>
+        <a href="#upload" class="hero-btn">Get Started</a>
+      </div>
+    </section>
+
+    <section id="upload" class="upload-section">
+      <h2>Upload Leaf Image</h2>
+
+      <div class="upload-box" id="drop-area">
+        <p>Drag & Drop Image Here</p>
+        <p>or</p>
+
+        <input type="file" id="fileInput" accept="image/*" />
+
+        <p>or use camera</p>
+
+        <!-- CAMERA BUTTON -->
+        <button onclick="startCamera()" class="secondary-btn">
+          Open Camera
+        </button>
+
+        <!-- VIDEO -->
+        <video id="camera" autoplay playsinline style="display: none"></video>
+
+        <!-- CAPTURE -->
+        <button
+          onclick="captureImage()"
+          id="captureBtn"
+          class="secondary-btn"
+          style="display: none"
+        >
+          Capture Image
+        </button>
+
+        <!-- ANALYZE -->
+        <button onclick="analyzeImage()">Analyze</button>
+
+        <!-- PREVIEW -->
+        <img id="preview" src="" alt="Preview" />
+      </div>
+    </section>
+
+    <section id="about" class="about">
+      <h2 class="section-label">About</h2>
+
+      <div class="about-grid">
+        <div class="about-box">
+          <h3>🎯 Objective</h3>
+          <p>Identify plant diseases accurately from leaf images.</p>
+        </div>
+
+        <div class="about-box">
+          <h3>🔄 How It Works</h3>
+          <p>Upload image → AI model analyzes → Get instant results.</p>
+        </div>
+
+        <div class="about-box">
+          <h3>✨ Features</h3>
+          <p>Fast and detailed analysis along with confidence score.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- contact details in the foot -->
+    <footer id="contact">
+      <h3>Contact Us</h3>
+      <p>Email: projectleaf@gmail.com</p>
+      <p>Phone: 9866115898</p>
+    </footer>
+
+    <script src="{% static 'js/script.js' %}"></script>
+  </body>
+</html>
