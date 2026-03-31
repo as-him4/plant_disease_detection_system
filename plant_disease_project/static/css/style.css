@@ -391,6 +391,42 @@ section{
     word-wrap: break-word;
 }
 
+.recommendation-box {
+    background: #f0fff4;
+    border: 1px solid #3cb371;
+    border-radius: 8px;
+    padding: 20px;
+    margin: 15px 0;
+    text-align: left;
+}
+
+.recommendation-box h4 {
+    margin: 0 0 15px 0;
+    color: #134d33;
+    font-size: 18px;
+}
+
+.recommendation-box .rec-section {
+    margin-bottom: 15px;
+}
+
+.recommendation-box .rec-section:last-child {
+    margin-bottom: 0;
+}
+
+.recommendation-box .rec-section strong {
+    color: #1a673f;
+    display: block;
+    margin-bottom: 5px;
+    font-size: 14px;
+}
+
+.recommendation-box .rec-section p {
+    margin: 0;
+    line-height: 1.5;
+    color: #333;
+}
+
 
 .about {
     background: #ffffff;

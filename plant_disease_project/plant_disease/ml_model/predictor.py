@@ -60,6 +60,199 @@ CLASS_NAMES = [
 LEAF_CLASS_NAMES = ["Leaf", "Not a leaf"]
 LEAF_CONFIDENCE_THRESHOLD = 0.70
 
+DISEASE_RECOMMENDATIONS = {
+    "Apple___Apple_scab": {
+        "treatment": "Apply fungicides like captan or myclobutanil during growing season",
+        "prevention": "Remove fallen leaves, prune for air circulation, choose resistant varieties",
+        "organic": "Use copper-based fungicides or neem oil applications"
+    },
+    "Apple___Black_rot": {
+        "treatment": "Remove mummified fruits, apply fungicides at petal fall",
+        "prevention": "Prune dead branches, remove infected fruits, maintain tree vigor",
+        "organic": "Copper sprays during dormant season, remove all infected material"
+    },
+    "Apple___Cedar_apple_rust": {
+        "treatment": "Apply fungicides every 7-10 days during infection period",
+        "prevention": "Remove nearby cedar trees if possible, plant resistant varieties",
+        "organic": "Sulfur-based fungicides, remove galls from cedar hosts"
+    },
+    "Apple___healthy": {
+        "treatment": "No treatment needed - plant is healthy!",
+        "prevention": "Continue regular monitoring, maintain good cultural practices",
+        "organic": "Maintain soil health with compost, encourage beneficial insects"
+    },
+    "Blueberry___healthy": {
+        "treatment": "No treatment needed - plant is healthy!",
+        "prevention": "Maintain acidic soil pH (4.5-5.5), ensure proper drainage",
+        "organic": "Mulch with pine bark, regular pruning for air circulation"
+    },
+    "Cherry_(including_sour)___Powdery_mildew": {
+        "treatment": "Apply sulfur or potassium bicarbonate fungicides",
+        "prevention": "Improve air circulation, avoid overhead watering",
+        "organic": "Milk spray (1:9 milk to water), neem oil applications"
+    },
+    "Cherry_(including_sour)___healthy": {
+        "treatment": "No treatment needed - plant is healthy!",
+        "prevention": "Regular pruning, balanced fertilization, monitor for pests",
+        "organic": "Compost application, beneficial insect habitat"
+    },
+    "Corn_(maize)___Cercospora_leaf_spot Gray_leaf_spot": {
+        "treatment": "Apply strobilurin or triazole fungicides at first sign",
+        "prevention": "Crop rotation, tillage to bury residue, resistant hybrids",
+        "organic": "Copper-based fungicides, remove infected crop residue"
+    },
+    "Corn_(maize)___Common_rust_": {
+        "treatment": "Apply fungicides if severe, usually doesn't need treatment",
+        "prevention": "Plant resistant hybrids, balanced fertilization",
+        "organic": "Generally self-limiting, maintain plant health"
+    },
+    "Corn_(maize)___Northern_Leaf_Blight": {
+        "treatment": "Apply fungicides at tasseling if disease present",
+        "prevention": "Crop rotation, tillage, resistant hybrids",
+        "organic": "Copper sprays, remove infected stalks after harvest"
+    },
+    "Corn_(maize)___healthy": {
+        "treatment": "No treatment needed - plant is healthy!",
+        "prevention": "Continue regular monitoring and good practices",
+        "organic": "Maintain soil fertility, crop rotation"
+    },
+    "Grape___Black_rot": {
+        "treatment": "Apply fungicides from bud break to veraison",
+        "prevention": "Remove mummies, prune for air flow, trellis management",
+        "organic": "Copper and sulfur sprays, canopy management"
+    },
+    "Grape___Esca_(Black_Measles)": {
+        "treatment": "No effective cure - remove infected vines",
+        "prevention": "Use clean planting stock, avoid pruning wounds during rain",
+        "organic": "Prune during dry weather, disinfect tools between cuts"
+    },
+    "Grape___Leaf_blight_(Isariopsis_Leaf_Spot)": {
+        "treatment": "Apply mancozeb or ziram fungicides",
+        "prevention": "Remove fallen leaves, improve air circulation",
+        "organic": "Copper-based sprays, sanitation of leaf litter"
+    },
+    "Grape___healthy": {
+        "treatment": "No treatment needed - plant is healthy!",
+        "prevention": "Regular canopy management, balanced nutrition",
+        "organic": "Cover crops, compost applications"
+    },
+    "Orange___Haunglongbing_(Citrus_greening)": {
+        "treatment": "No cure - remove infected trees immediately",
+        "prevention": "Control psyllid vectors, use certified disease-free stock",
+        "organic": "Reflective mulches to deter psyllids, beneficial insects"
+    },
+    "Peach___Bacterial_spot": {
+        "treatment": "Copper sprays at leaf fall and bud swell",
+        "prevention": "Plant resistant varieties, avoid overhead irrigation",
+        "organic": "Copper applications, improve soil drainage"
+    },
+    "Peach___healthy": {
+        "treatment": "No treatment needed - plant is healthy!",
+        "prevention": "Regular pruning, pest monitoring, proper nutrition",
+        "organic": "Organic mulches, beneficial insect release"
+    },
+    "Pepper,_bell___Bacterial_spot": {
+        "treatment": "Copper-based bactericides, remove infected plants",
+        "prevention": "Use certified seed, crop rotation, avoid wet foliage",
+        "organic": "Copper sprays, bacteriophage applications"
+    },
+    "Pepper,_bell___healthy": {
+        "treatment": "No treatment needed - plant is healthy!",
+        "prevention": "Proper spacing, drip irrigation, balanced fertilization",
+        "organic": "Compost tea, companion planting"
+    },
+    "Potato___Early_blight": {
+        "treatment": "Apply chlorothalonil or mancozeb fungicides",
+        "prevention": "Crop rotation, remove infected debris, hill plants",
+        "organic": "Copper sprays, baking soda solution"
+    },
+    "Potato___Late_blight": {
+        "treatment": "Apply fungicides immediately at first symptoms",
+        "prevention": "Use certified seed, hill plants, avoid overhead watering",
+        "organic": "Copper-based fungicides, remove infected plants immediately"
+    },
+    "Potato___healthy": {
+        "treatment": "No treatment needed - plant is healthy!",
+        "prevention": "Continue monitoring, proper hilling and watering",
+        "organic": "Compost application, crop rotation"
+    },
+    "Raspberry___healthy": {
+        "treatment": "No treatment needed - plant is healthy!",
+        "prevention": "Annual pruning, good air circulation, weed control",
+        "organic": "Mulching, organic fertilizers"
+    },
+    "Soybean___healthy": {
+        "treatment": "No treatment needed - plant is healthy!",
+        "prevention": "Crop rotation, row spacing for air flow",
+        "organic": "Cover cropping, inoculation with rhizobia"
+    },
+    "Squash___Powdery_mildew": {
+        "treatment": "Apply sulfur, potassium bicarbonate, or myclobutanil",
+        "prevention": "Resistant varieties, good air circulation, avoid shade",
+        "organic": "Milk spray, neem oil, baking soda solution"
+    },
+    "Strawberry___Leaf_scorch": {
+        "treatment": "Apply fungicides like captan or thiophanate-methyl",
+        "prevention": "Remove old leaves after harvest, proper spacing",
+        "organic": "Copper sprays, improve air circulation"
+    },
+    "Strawberry___healthy": {
+        "treatment": "No treatment needed - plant is healthy!",
+        "prevention": "Regular monitoring, proper watering, mulching",
+        "organic": "Straw mulch, compost application"
+    },
+    "Tomato___Bacterial_spot": {
+        "treatment": "Copper-based bactericides, remove severely infected plants",
+        "prevention": "Use certified seed, crop rotation, avoid overhead watering",
+        "organic": "Copper sprays, bacteriophage products"
+    },
+    "Tomato___Early_blight": {
+        "treatment": "Apply chlorothalonil or mancozeb every 7-10 days",
+        "prevention": "Stake plants, remove lower leaves, mulch soil",
+        "organic": "Copper sprays, compost tea"
+    },
+    "Tomato___Late_blight": {
+        "treatment": "Apply fungicides immediately, may need to remove plants",
+        "prevention": "Use resistant varieties, stake plants, avoid overhead water",
+        "organic": "Copper-based fungicides, remove infected plants"
+    },
+    "Tomato___Leaf_Mold": {
+        "treatment": "Apply chlorothalonil or copper fungicides",
+        "prevention": "Improve ventilation, reduce humidity, space plants",
+        "organic": "Copper sprays, improve greenhouse ventilation"
+    },
+    "Tomato___Septoria_leaf_spot": {
+        "treatment": "Apply chlorothalonil or mancozeb fungicides",
+        "prevention": "Remove infected leaves, mulch soil, water at base",
+        "organic": "Copper sprays, baking soda solution"
+    },
+    "Tomato___Spider_mites Two-spotted_spider_mite": {
+        "treatment": "Apply miticides like abamectin or bifenazate",
+        "prevention": "Control dust, avoid water stress, introduce predators",
+        "organic": "Neem oil, insecticidal soap, release predatory mites"
+    },
+    "Tomato___Target_Spot": {
+        "treatment": "Apply fungicides like chlorothalonil or azoxystrobin",
+        "prevention": "Crop rotation, remove infected debris, stake plants",
+        "organic": "Copper-based fungicides, improve air circulation"
+    },
+    "Tomato___Tomato_Yellow_Leaf_Curl_Virus": {
+        "treatment": "No cure - remove infected plants, control whiteflies",
+        "prevention": "Use resistant varieties, control whitefly vectors",
+        "organic": "Reflective mulches, row covers, beneficial insects"
+    },
+    "Tomato___Tomato_mosaic_virus": {
+        "treatment": "No cure - remove infected plants",
+        "prevention": "Use resistant varieties, disinfect tools, control aphids",
+        "organic": "Sanitation, remove weed hosts, beneficial insects"
+    },
+    "Tomato___healthy": {
+        "treatment": "No treatment needed - plant is healthy!",
+        "prevention": "Continue regular care, monitoring, and proper pruning",
+        "organic": "Compost, companion planting, crop rotation"
+    }
+}
+
 _model = None
 _leaf_model = None
 
@@ -240,9 +433,17 @@ def predict(image_path):
     confidence = float(predictions[top_idx])
     all_scores = {CLASS_NAMES[i]: float(predictions[i]) for i in range(len(CLASS_NAMES))}
 
+    disease_name = CLASS_NAMES[top_idx]
+    recommendation = DISEASE_RECOMMENDATIONS.get(disease_name, {
+        'treatment': 'Consult with a plant pathologist for specific treatment recommendations',
+        'prevention': 'Maintain good garden hygiene and monitor plants regularly',
+        'organic': 'Consider organic farming practices and consult local extension services'
+    })
+
     return {
-        'disease_name': CLASS_NAMES[top_idx],
+        'disease_name': disease_name,
         'confidence': confidence,
         'all_scores': all_scores,
         'status': 'completed',
+        'recommendation': recommendation
     }

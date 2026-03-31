@@ -250,9 +250,29 @@ async function analyzeImage() {
                     <p><small>Scan ID: #${data.scan_id}</small></p>
                 `;
             } else {
+                const rec = data.recommendation || {};
                 resultBox.innerHTML = `
                     <h3>Disease: ${data.disease_name}</h3>
                     <p><b>Confidence:</b> ${data.confidence}</p>
+                    
+                    <div class="recommendation-box">
+                        <h4>💡 Recommendations</h4>
+                        <div class="rec-section">
+                            <strong>Treatment:</strong>
+                            <p>${rec.treatment || 'Not available'}</p>
+                        </div>
+                        <div class="rec-section">
+                            <strong>Prevention:</strong>
+                            <p>${rec.prevention || 'Not available'}</p>
+                        </div>
+                        ${rec.organic ? `
+                        <div class="rec-section">
+                            <strong>🌿 Organic Option:</strong>
+                            <p>${rec.organic}</p>
+                        </div>
+                        ` : ''}
+                    </div>
+                    
                     <p><small>Scan ID: #${data.scan_id}</small></p>
                 `;
             }

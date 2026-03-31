@@ -174,6 +174,10 @@ def analyze(request):
             response_data['leaf_label'] = result.get('leaf_label')
             response_data['leaf_confidence'] = result.get('leaf_confidence')
 
+        # Add treatment recommendations
+        if 'recommendation' in result:
+            response_data['recommendation'] = result['recommendation']
+
         return JsonResponse(response_data)
 
     except Exception as e:
