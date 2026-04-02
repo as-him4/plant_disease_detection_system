@@ -5,11 +5,14 @@ Handles loading TensorFlow/Keras models and running predictions.
 Two-stage pipeline:
 1. Leaf detector: Validates if image is a leaf
 2. Disease classifier: Identifies disease if leaf is confirmed
+
+FIX: preprocess_image now uses ResNet50's preprocess_input instead of /255.0
 """
 
 import os
 import numpy as np
 from django.conf import settings
+from tf_keras.applications.resnet50 import preprocess_input  
 
 MODEL_READY = True
 LEAF_MODEL_READY = True
@@ -25,13 +28,17 @@ CLASS_NAMES = [
     "Cherry_(including_sour)___Powdery_mildew",
     "Cherry_(including_sour)___healthy",
     "Corn_(maize)___Cercospora_leaf_spot Gray_leaf_spot",
-    "Corn_(maize)___Common_rust_",
+    "Corn_(maize)__Common_rust",
     "Corn_(maize)___Northern_Leaf_Blight",
     "Corn_(maize)___healthy",
     "Grape___Black_rot",
     "Grape___Esca_(Black_Measles)",
     "Grape___Leaf_blight_(Isariopsis_Leaf_Spot)",
     "Grape___healthy",
+    "Litchi_curl_mite",
+    "Litchi_healthy",
+    "Litchi_leaf_insect_infestation",
+    "Litchi_swooty_mould",
     "Orange___Haunglongbing_(Citrus_greening)",
     "Peach___Bacterial_spot",
     "Peach___healthy",
@@ -45,6 +52,7 @@ CLASS_NAMES = [
     "Squash___Powdery_mildew",
     "Strawberry___Leaf_scorch",
     "Strawberry___healthy",
+    "Tejpatta_healthy",
     "Tomato___Bacterial_spot",
     "Tomato___Early_blight",
     "Tomato___Late_blight",
@@ -54,7 +62,8 @@ CLASS_NAMES = [
     "Tomato___Target_Spot",
     "Tomato___Tomato_Yellow_Leaf_Curl_Virus",
     "Tomato___Tomato_mosaic_virus",
-    "Tomato___healthy"
+    "Tomato___healthy",
+    "tejpatta_Algal_leaf_spot"
 ]
 
 LEAF_CLASS_NAMES = ["Leaf", "Not a leaf"]
@@ -101,7 +110,7 @@ DISEASE_RECOMMENDATIONS = {
         "prevention": "Crop rotation, tillage to bury residue, resistant hybrids",
         "organic": "Copper-based fungicides, remove infected crop residue"
     },
-    "Corn_(maize)___Common_rust_": {
+    "Corn_(maize)__Common_rust": {
         "treatment": "Apply fungicides if severe, usually doesn't need treatment",
         "prevention": "Plant resistant hybrids, balanced fertilization",
         "organic": "Generally self-limiting, maintain plant health"
@@ -135,6 +144,26 @@ DISEASE_RECOMMENDATIONS = {
         "treatment": "No treatment needed - plant is healthy!",
         "prevention": "Regular canopy management, balanced nutrition",
         "organic": "Cover crops, compost applications"
+    },
+    "Litchi_curl_mite": {
+        "treatment": "Prune and destroy heavily infested flushes, apply a recommended miticide or sulfur spray during active infestation",
+        "prevention": "Use clean planting material, monitor new flushes regularly, avoid carrying infested nursery stock into orchards",
+        "organic": "Use wettable sulfur where suitable, prune affected shoots, encourage natural predators by avoiding unnecessary broad-spectrum sprays"
+    },
+    "Litchi_healthy": {
+        "treatment": "No treatment needed - plant is healthy!",
+        "prevention": "Maintain regular orchard sanitation, balanced nutrition, and periodic monitoring of new flushes and panicles",
+        "organic": "Apply compost or well-rotted manure, mulch to conserve moisture, maintain tree vigor with good cultural care"
+    },
+    "Litchi_leaf_insect_infestation": {
+        "treatment": "Remove badly damaged leaves and apply an appropriate insecticide only when infestation is economically significant",
+        "prevention": "Scout young flushes regularly, manage weeds and alternate hosts, keep trees well pruned for inspection and airflow",
+        "organic": "Hand-remove affected leaves when feasible, use neem-based products or insecticidal soap on light infestations, conserve beneficial insects"
+    },
+    "Litchi_swooty_mould": {
+        "treatment": "Control honeydew-producing pests such as aphids, scale, or mealybugs, then wash or allow the black coating to weather off the leaves",
+        "prevention": "Monitor and manage sap-sucking insects early, prune crowded growth, improve air circulation within the canopy",
+        "organic": "Use neem oil or horticultural oil against the insect source and wash leaves with water where practical to reduce the mould layer"
     },
     "Orange___Haunglongbing_(Citrus_greening)": {
         "treatment": "No cure - remove infected trees immediately",
@@ -201,6 +230,11 @@ DISEASE_RECOMMENDATIONS = {
         "prevention": "Regular monitoring, proper watering, mulching",
         "organic": "Straw mulch, compost application"
     },
+    "Tejpatta_healthy": {
+        "treatment": "No treatment needed - plant is healthy!",
+        "prevention": "Maintain good spacing, prune lightly for airflow, monitor leaves regularly for early pest or spot symptoms",
+        "organic": "Use compost-based nutrition, mulch around the root zone, avoid overhead irrigation when possible"
+    },
     "Tomato___Bacterial_spot": {
         "treatment": "Copper-based bactericides, remove severely infected plants",
         "prevention": "Use certified seed, crop rotation, avoid overhead watering",
@@ -250,6 +284,11 @@ DISEASE_RECOMMENDATIONS = {
         "treatment": "No treatment needed - plant is healthy!",
         "prevention": "Continue regular care, monitoring, and proper pruning",
         "organic": "Compost, companion planting, crop rotation"
+    },
+    "tejpatta_Algal_leaf_spot": {
+        "treatment": "Prune and remove severely affected leaves, apply a copper-based fungicide where algal leaf spot is spreading",
+        "prevention": "Reduce excess shade and leaf wetness, improve spacing and airflow, avoid prolonged overhead irrigation",
+        "organic": "Use permitted copper formulations carefully, improve drainage and sunlight penetration, remove infected fallen leaves"
     }
 }
 
@@ -281,6 +320,7 @@ def load_model():
 
     tf = _get_tf()
     _model = tf.keras.models.load_model(model_path)
+    print(f"[PlantDisease] Disease model loaded from: {model_path}")
     return _model
 
 
@@ -298,13 +338,45 @@ def load_leaf_model():
 
     tf = _get_tf()
     _leaf_model = tf.keras.models.load_model(model_path)
+    print(f"[PlantDisease] Leaf model loaded from: {model_path}")
     return _leaf_model
+
+
+def preprocess_image(image_path):
+    """
+    Load and preprocess an image for ResNet50 input.
+
+    IMPORTANT: ResNet50 was trained with preprocess_input which scales
+    pixels from [0, 255] to [-1, 1]. Using /255.0 gives wrong results.
+
+    Args:
+        image_path: path to image file on disk
+
+    Returns:
+        np.ndarray: shape (1, 224, 224, 3) scaled to [-1, 1]
+    """
+    tf = _get_tf()
+
+    # Load and resize image
+    img = tf.keras.utils.load_img(image_path, target_size=IMAGE_SIZE)
+
+    # Convert to array — values in [0, 255]
+    img_array = tf.keras.utils.img_to_array(img)
+
+    # Add batch dimension — shape becomes (1, 224, 224, 3)
+    img_array = np.expand_dims(img_array, axis=0)
+
+    # ✅ ResNet50 preprocessing — scales [0,255] → [-1, 1]
+    # This MUST match what was used during training
+    img_array = preprocess_input(img_array)
+
+    return img_array
 
 
 def predict_leaf(image_path):
     """
-    Run leaf/not-leaf classification.
-    
+    Run leaf / not-leaf classification.
+
     Returns dict with is_leaf boolean and metadata.
     """
     if not LEAF_MODEL_READY:
@@ -335,46 +407,40 @@ def predict_leaf(image_path):
 
         if len(leaf_preds) != len(LEAF_CLASS_NAMES):
             raise ValueError(
-                f"Leaf model output ({len(leaf_preds)}) doesn't match expected classes ({len(LEAF_CLASS_NAMES)})"
+                f"Leaf model output ({len(leaf_preds)}) doesn't match "
+                f"expected classes ({len(LEAF_CLASS_NAMES)})"
             )
 
-        leaf_top_idx = int(np.argmax(leaf_preds))
-        leaf_label = LEAF_CLASS_NAMES[leaf_top_idx]
+        leaf_top_idx   = int(np.argmax(leaf_preds))
+        leaf_label     = LEAF_CLASS_NAMES[leaf_top_idx]
         leaf_confidence = float(leaf_preds[leaf_top_idx])
-        leaf_scores = {LEAF_CLASS_NAMES[i]: float(leaf_preds[i]) for i in range(len(LEAF_CLASS_NAMES))}
+        leaf_scores    = {
+            LEAF_CLASS_NAMES[i]: float(leaf_preds[i])
+            for i in range(len(LEAF_CLASS_NAMES))
+        }
 
-        is_leaf = (leaf_top_idx == 0 and leaf_confidence >= LEAF_CONFIDENCE_THRESHOLD)
+        is_leaf = (
+            leaf_top_idx == 0 and
+            leaf_confidence >= LEAF_CONFIDENCE_THRESHOLD
+        )
 
         return {
-            'is_leaf': is_leaf,
-            'leaf_label': leaf_label,
-            'leaf_confidence': leaf_confidence,
-            'leaf_scores': leaf_scores,
-            'status': 'completed',
+            'is_leaf'         : is_leaf,
+            'leaf_label'      : leaf_label,
+            'leaf_confidence' : leaf_confidence,
+            'leaf_scores'     : leaf_scores,
+            'status'          : 'completed',
         }
+
     except Exception as e:
         return {
-            'is_leaf': False,
-            'leaf_label': f'Error: {str(e)}',
-            'leaf_confidence': 0.0,
-            'leaf_scores': {name: 0.0 for name in LEAF_CLASS_NAMES},
-            'status': 'stub',
-            'error': f'Leaf prediction failed: {str(e)}'
+            'is_leaf'         : False,
+            'leaf_label'      : f'Error: {str(e)}',
+            'leaf_confidence' : 0.0,
+            'leaf_scores'     : {name: 0.0 for name in LEAF_CLASS_NAMES},
+            'status'          : 'stub',
+            'error'           : f'Leaf prediction failed: {str(e)}'
         }
-
-
-def preprocess_image(image_path):
-    """
-    Load and preprocess an image for model input.
-    
-    Returns:
-        np.ndarray: Image with shape (1, H, W, 3), normalized to [0, 1]
-    """
-    tf = _get_tf()
-    img = tf.keras.utils.load_img(image_path, target_size=IMAGE_SIZE)
-    img_array = tf.keras.utils.img_to_array(img)
-    img_array = img_array / 255.0
-    return np.expand_dims(img_array, axis=0)
 
 
 def predict(image_path):
@@ -382,68 +448,101 @@ def predict(image_path):
     Two-stage prediction pipeline:
     1. Validate image is a leaf
     2. If leaf, classify disease
-    
+
+    Args:
+        image_path: path to uploaded image file on disk
+
     Returns:
-        dict: Prediction results with disease/leaf classification
+        dict: Full prediction result including disease name,
+              confidence, recommendations, and leaf detection info
     """
     if not MODEL_READY:
         return {
-            'disease_name': 'Model not ready yet',
-            'confidence': 0.0,
-            'all_scores': {name: 0.0 for name in CLASS_NAMES},
-            'status': 'stub',
+            'disease_name' : 'Model not ready yet',
+            'confidence'   : 0.0,
+            'all_scores'   : {name: 0.0 for name in CLASS_NAMES},
+            'status'       : 'stub',
         }
 
+    # ── Stage 1: Leaf detection ──
     leaf_result = predict_leaf(image_path)
 
     if leaf_result.get('status') == 'stub':
         return {
-            'disease_name': 'Not a leaf',
-            'confidence': 0.0,
-            'all_scores': {name: 0.0 for name in CLASS_NAMES},
-            'status': 'completed',
-            'is_leaf': False,
-            'leaf_label': leaf_result.get('leaf_label', 'Unknown'),
-            'leaf_confidence': leaf_result.get('leaf_confidence', 0.0),
-            'leaf_error': leaf_result.get('error'),
+            'disease_name'    : 'Unable to process image',
+            'confidence'      : 0.0,
+            'all_scores'      : {name: 0.0 for name in CLASS_NAMES},
+            'status'          : 'error',
+            'is_leaf'         : None,
+            'leaf_label'      : leaf_result.get('leaf_label', 'Unknown'),
+            'leaf_confidence' : leaf_result.get('leaf_confidence', 0.0),
+            'error'           : leaf_result.get('error', 'Leaf model unavailable'),
+            'leaf_error'      : leaf_result.get('error'),
         }
 
     if not leaf_result.get('is_leaf', False):
         return {
-            'disease_name': 'Not a leaf',
-            'confidence': leaf_result.get('leaf_confidence', 0.0),
-            'all_scores': leaf_result.get('leaf_scores', {}),
-            'status': 'completed',
-            'is_leaf': False,
-            'leaf_label': leaf_result.get('leaf_label'),
-            'leaf_confidence': leaf_result.get('leaf_confidence'),
+            'disease_name'    : 'Not a leaf',
+            'confidence'      : leaf_result.get('leaf_confidence', 0.0),
+            'all_scores'      : leaf_result.get('leaf_scores', {}),
+            'status'          : 'completed',
+            'is_leaf'         : False,
+            'leaf_label'      : leaf_result.get('leaf_label'),
+            'leaf_confidence' : leaf_result.get('leaf_confidence'),
         }
 
-    model = load_model()
-    img_array = preprocess_image(image_path)
-    predictions = model.predict(img_array)[0]
+    # ── Stage 2: Disease classification ──
+    model      = load_model()
+    img_array  = preprocess_image(image_path)   # ✅ uses preprocess_input
+    predictions = model.predict(img_array, verbose=0)[0]
 
     if len(predictions) != len(CLASS_NAMES):
         raise ValueError(
-            f"Model predictions ({len(predictions)}) don't match CLASS_NAMES ({len(CLASS_NAMES)}). "
-            "Update CLASS_NAMES to match your model's output classes."
+            f"Model output size ({len(predictions)}) does not match "
+            f"CLASS_NAMES length ({len(CLASS_NAMES)}). "
+            "Run the class name verification cell in Kaggle and update CLASS_NAMES."
         )
 
-    top_idx = int(np.argmax(predictions))
-    confidence = float(predictions[top_idx])
-    all_scores = {CLASS_NAMES[i]: float(predictions[i]) for i in range(len(CLASS_NAMES))}
-
+    # Top prediction
+    top_idx      = int(np.argmax(predictions))
+    confidence   = float(predictions[top_idx])
     disease_name = CLASS_NAMES[top_idx]
+
+    # All scores dict
+    all_scores = {
+        CLASS_NAMES[i]: float(predictions[i])
+        for i in range(len(CLASS_NAMES))
+    }
+
+    # Top 5 debug log
+    print(f"[PlantDisease] DEBUG — Top 5 predictions:")
+    for idx in np.argsort(predictions)[::-1][:5]:
+        print(f"  {CLASS_NAMES[idx]:<55} {predictions[idx]:.4f}")
+    print(f"[PlantDisease] Selected: {disease_name} ({confidence:.4f})")
+
+    # Recommendation
     recommendation = DISEASE_RECOMMENDATIONS.get(disease_name, {
-        'treatment': 'Consult with a plant pathologist for specific treatment recommendations',
-        'prevention': 'Maintain good garden hygiene and monitor plants regularly',
-        'organic': 'Consider organic farming practices and consult local extension services'
+        'treatment'  : 'Consult with a plant pathologist for specific treatment recommendations',
+        'prevention' : 'Maintain good garden hygiene and monitor plants regularly',
+        'organic'    : 'Consider organic farming practices and consult local extension services'
     })
 
+    # Parse plant name and condition
+    parts     = disease_name.split('___')
+    plant     = parts[0].replace('_', ' ').strip()
+    condition = parts[1].replace('_', ' ').strip() if len(parts) > 1 else 'Unknown'
+    is_healthy = 'healthy' in disease_name.lower()
+
     return {
-        'disease_name': disease_name,
-        'confidence': confidence,
-        'all_scores': all_scores,
-        'status': 'completed',
-        'recommendation': recommendation
+        'disease_name'    : disease_name,
+        'confidence'      : confidence,
+        'all_scores'      : all_scores,
+        'status'          : 'completed',
+        'is_leaf'         : True,
+        'leaf_label'      : leaf_result.get('leaf_label'),
+        'leaf_confidence' : leaf_result.get('leaf_confidence'),
+        'plant'           : plant,
+        'condition'       : condition,
+        'is_healthy'      : is_healthy,
+        'recommendation'  : recommendation,
     }

@@ -295,6 +295,14 @@ async function analyzeImage() {
                     <p>Model is still being trained.</p>
                     <p><b>Note:</b> Your image was saved. Results will be available once the model is ready.</p>
                 `;
+            } else if(data.status === "error"){
+                const errorMsg = data.error ? `<p style="color:red;"><small>Analysis failed: ${data.error}</small></p>` : '';
+                resultBox.innerHTML = `
+                    <h3>Analysis Failed</h3>
+                    <p>Unable to process image.</p>
+                    <p><b>Reason:</b> ${data.leaf_label || 'Leaf model unavailable'}</p>
+                    ${errorMsg}
+                `;
             } else if(data.is_leaf === false || data.disease_name === "Not a leaf") {
                 const errorMsg = data.leaf_error ? `<p style="color:orange;"><small>${data.leaf_error}</small></p>` : '';
                 resultBox.innerHTML = `

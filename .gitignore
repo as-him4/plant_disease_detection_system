@@ -152,6 +152,7 @@ media/
 
 # ML models (uncomment if you don't want to track large .h5 files)
 *.h5
+*.keras
 
 # Sensitive files
 plant_disease_project/plant_disease_project/settings_local.py

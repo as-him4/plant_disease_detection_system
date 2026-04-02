@@ -13,5 +13,4 @@ urlpatterns = [
     # Main app
     path('home/',views.home,name='home'),
     path('analyze/',views.analyze,name='analyze'),
-    path('scan-history/',views.scan_history,name='scan_history'),
 ]

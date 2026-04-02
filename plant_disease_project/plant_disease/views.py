@@ -1,6 +1,4 @@
 import os
-import secrets
-import logging
 
 from django.shortcuts import render, redirect
 from django.contrib.auth import authenticate, login, logout
@@ -10,13 +8,10 @@ from django.http import JsonResponse
 from django.views.decorators.http import require_POST
 from django.conf import settings
 from django.core.mail import send_mail
-from django.utils import timezone
 from django.urls import reverse
 
-from .models import UserProfile, ScanHistory, PasswordResetToken
+from .models import PasswordResetToken, ScanHistory
 from .ml_model.predictor import predict
-
-logger = logging.getLogger(__name__)
 
 
 
@@ -60,7 +55,6 @@ def register_view(request):
     first_name       = request.POST.get('first_name', '').strip()
     last_name        = request.POST.get('last_name', '').strip()
     email            = request.POST.get('email', '').strip()
-    phone_number     = request.POST.get('phoneNumber', '').strip()
     username         = request.POST.get('username', '').strip()
     password         = request.POST.get('password', '')
     confirm_password = request.POST.get('confirmpassword', '')
@@ -78,9 +72,6 @@ def register_view(request):
     if User.objects.filter(email=email).exists():
         return JsonResponse({'success': False, 'error': 'Email already registered.'}, status=400)
 
-    if not phone_number.isdigit() or len(phone_number) != 10:
-        return JsonResponse({'success': False, 'error': 'Phone number must be exactly 10 digits.'}, status=400)
-
     # Create user
     user = User.objects.create_user(
         username   = username,
@@ -90,15 +81,11 @@ def register_view(request):
         last_name  = last_name,
     )
 
-    # Create extended profile
-    UserProfile.objects.create(user=user, phone_number=phone_number)
-
     return JsonResponse({'success': True, 'message': 'Registered successfully! Please login.'})
 
 
 @login_required
 def logout_view(request):
-    """Log the user out and redirect to login page."""
     logout(request)
     return redirect('index')
 
@@ -106,14 +93,11 @@ def logout_view(request):
 
 #  Main app views
 
-
 @login_required
 def home(request):
     """Main home / upload page."""
-    recent_scans = ScanHistory.objects.filter(user=request.user)[:5]
     context = {
-        'user'        : request.user,
-        'recent_scans': recent_scans,
+        'user': request.user,
     }
     return render(request, 'home.html', context)
 
@@ -186,33 +170,12 @@ def analyze(request):
         return JsonResponse(response_data)
 
     except Exception:
-        logger.exception("Image analysis failed for user_id=%s", request.user.id)
         scan.status = 'failed'
         scan.save()
         return JsonResponse(
             {'success': False, 'error': 'We could not analyze the image right now. Please try again.'},
             status=500
         )
-
-
-@login_required
-def scan_history(request):
-    """Return the logged-in user's scan history as JSON."""
-    scans = ScanHistory.objects.filter(user=request.user).values(
-        'id', 'disease_name', 'confidence', 'status', 'created_at'
-    )
-
-    data = []
-    for s in scans:
-        data.append({
-            'id'          : s['id'],
-            'disease_name': s['disease_name'] or 'Pending',
-            'confidence'  : f"{s['confidence'] * 100:.1f}%" if s['confidence'] else 'N/A',
-            'status'      : s['status'],
-            'created_at'  : s['created_at'].strftime('%Y-%m-%d %H:%M'),
-        })
-
-    return JsonResponse({'success': True, 'scans': data})
 
 
 def password_reset_request(request):
@@ -260,7 +223,6 @@ Plant Disease Detection Team
             )
             return JsonResponse({'success': True, 'message': 'If an account exists with this email, you will receive a password reset link.'})
         except Exception:
-            logger.exception("Password reset email sending failed for user_id=%s", user.id)
             return JsonResponse(
                 {'success': False, 'error': 'We could not send the reset email right now. Please try again later.'},
                 status=500
