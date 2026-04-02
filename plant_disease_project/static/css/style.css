@@ -362,6 +362,106 @@ section{
     display: none;
 }
 
+.crop-editor {
+    width: 100%;
+    display: none;
+    flex-direction: column;
+    gap: 12px;
+    align-items: center;
+}
+
+.crop-help {
+    font-size: 13px;
+    color: #456;
+    line-height: 1.5;
+}
+
+.crop-viewport {
+    --crop-frame-inset: 18px;
+    position: relative;
+    width: min(260px, 100%);
+    aspect-ratio: 1 / 1;
+    border-radius: 14px;
+    overflow: hidden;
+    background: linear-gradient(135deg, #e7efe8, #f7fbf8);
+    border: 1px solid #c9dfcf;
+    touch-action: none;
+    cursor: grab;
+}
+
+.crop-viewport.dragging {
+    cursor: grabbing;
+}
+
+.crop-viewport img {
+    position: absolute;
+    max-width: none;
+    user-select: none;
+    -webkit-user-drag: none;
+    pointer-events: none;
+}
+
+.crop-frame {
+    position: absolute;
+    inset: var(--crop-frame-inset);
+    border: 2px solid rgba(255,255,255,0.96);
+    border-radius: 12px;
+    box-shadow:
+        0 0 0 9999px rgba(19, 77, 51, 0.3),
+        0 12px 25px rgba(0,0,0,0.12);
+    pointer-events: none;
+}
+
+.crop-frame-label {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    padding: 4px 8px;
+    border-radius: 999px;
+    background: rgba(19, 77, 51, 0.9);
+    color: #fff;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+}
+
+.crop-grid {
+    position: absolute;
+    inset: 0;
+    background-image:
+        linear-gradient(to right, transparent 33.33%, rgba(255,255,255,0.45) 33.33%, rgba(255,255,255,0.45) 34%, transparent 34%, transparent 66.66%, rgba(255,255,255,0.45) 66.66%, rgba(255,255,255,0.45) 67%, transparent 67%),
+        linear-gradient(to bottom, transparent 33.33%, rgba(255,255,255,0.45) 33.33%, rgba(255,255,255,0.45) 34%, transparent 34%, transparent 66.66%, rgba(255,255,255,0.45) 66.66%, rgba(255,255,255,0.45) 67%, transparent 67%);
+}
+
+.crop-zoom-control {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    font-size: 14px;
+    color: #1a673f;
+    font-weight: 600;
+    text-align: left;
+}
+
+.crop-zoom-control input {
+    margin-bottom: 0;
+    accent-color: #3cb371;
+}
+
+.crop-actions {
+    width: 100%;
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.crop-actions button {
+    flex: 1 1 120px;
+    margin-bottom: 0;
+}
+
 .upload-section {
     display: flex;
     background: #f9fbf9;
@@ -372,9 +472,78 @@ section{
     padding: 80px 10%;
 }
 
+.model-disclaimer {
+    width: min(900px, 100%);
+    background: #fff8e8;
+    border: 1px solid #f0d9a8;
+    border-left: 4px solid #d89b25;
+    border-radius: 10px;
+    padding: 16px 18px;
+    text-align: left;
+    color: #5f4300;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+}
+
+.model-disclaimer p {
+    margin: 0;
+    font-size: 14px;
+    line-height: 1.5;
+}
+
+.model-disclaimer .note-label {
+    color: #8a4f00;
+    letter-spacing: 0.2px;
+}
+
+.model-disclaimer details {
+    margin-top: 12px;
+    border: 1px solid #f1dfba;
+    border-radius: 8px;
+    background: #fffdf8;
+    overflow: hidden;
+}
+
+.model-disclaimer summary {
+    cursor: pointer;
+    font-weight: 600;
+    padding: 10px 12px;
+    background: #fff3d6;
+    color: #6b4300;
+}
+
+.model-disclaimer details[open] summary {
+    border-bottom: 1px solid #f1dfba;
+}
+
+.model-disclaimer ul {
+    margin: 0;
+    padding: 12px;
+    list-style: none;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: 8px;
+    max-height: 260px;
+    overflow-y: auto;
+}
+
+.model-disclaimer li {
+    margin: 0;
+}
+
+.model-disclaimer code {
+    display: block;
+    background: #ffffff;
+    border: 1px solid #ecd4a4;
+    border-radius: 6px;
+    padding: 8px 10px;
+    font-size: 13px;
+    color: #5a3d00;
+    white-space: normal;
+}
+
 .result-section {
     width: 100%;
-    padding: 80px 10%;
+    padding: 32px 10% 16px;
     text-align: center;
 }
 
@@ -394,7 +563,7 @@ section{
     border: 1px solid #3cb371;
     border-radius: 8px;
     padding: 20px;
-    margin: 15px 0;
+    margin: 15px 0 0;
     text-align: left;
 }
 

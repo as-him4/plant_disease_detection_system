@@ -152,7 +152,7 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 LOGIN_URL = '/'
 LOGIN_REDIRECT_URL = '/home/'
 
-MAX_UPLOAD_SIZE = 5 * 1024 * 1024
+MAX_UPLOAD_SIZE = 10 * 1024 * 1024
 
 ML_MODEL_PATH = BASE_DIR / 'plant_disease' / 'ml_model' / 'plant_disease_model.h5'
 LEAF_MODEL_PATH = BASE_DIR / 'plant_disease' / 'ml_model' / 'leaf_detector_model.keras'

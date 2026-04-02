@@ -1,18 +1,9 @@
-"""
-plant_disease/ml_model/predictor.py
-------------------------------------
-Handles loading TensorFlow/Keras models and running predictions.
-Two-stage pipeline:
-1. Leaf detector: Validates if image is a leaf
-2. Disease classifier: Identifies disease if leaf is confirmed
 
-FIX: preprocess_image now uses ResNet50's preprocess_input instead of /255.0
-"""
 
 import os
 import numpy as np
 from django.conf import settings
-from tf_keras.applications.resnet50 import preprocess_input  
+from tensorflow.keras.applications.resnet50 import preprocess_input  
 
 MODEL_READY = True
 LEAF_MODEL_READY = True

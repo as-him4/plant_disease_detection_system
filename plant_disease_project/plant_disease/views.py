@@ -11,7 +11,7 @@ from django.core.mail import send_mail
 from django.urls import reverse
 
 from .models import PasswordResetToken, ScanHistory
-from .ml_model.predictor import predict
+from .ml_model.predictor import CLASS_NAMES, predict
 
 
 
@@ -96,8 +96,27 @@ def logout_view(request):
 @login_required
 def home(request):
     """Main home / upload page."""
+    plant_names = []
+    seen = set()
+
+    for class_name in CLASS_NAMES:
+        # Extract plant name from patterns like "Tomato___Late_blight"
+        # and custom names like "Litchi_healthy".
+        raw_name = class_name.split("___")[0]
+        raw_name = raw_name.split("_")[0]
+        display_name = raw_name.replace("_", " ").replace(",", " ").strip()
+        display_name = " ".join(display_name.split())
+        if display_name.lower() == "pepper":
+            display_name = "Bell Pepper"
+        normalized = display_name.lower()
+
+        if normalized and normalized not in seen:
+            seen.add(normalized)
+            plant_names.append(display_name)
+
     context = {
         'user': request.user,
+        'detectable_plants': plant_names,
     }
     return render(request, 'home.html', context)
 
