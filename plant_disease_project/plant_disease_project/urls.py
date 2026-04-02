@@ -19,6 +19,10 @@ from django.urls import path,include
 from django.conf import settings
 from django.conf.urls.static import static
 
+admin.site.site_header = "Plant Disease System Administrator"
+admin.site.site_title = "Plant Disease Administrator Portal"
+admin.site.index_title = "Welcome to Plant Disease Administrator Portal"
+
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('', include('plant_disease.urls')),

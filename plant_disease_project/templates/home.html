@@ -73,8 +73,9 @@
 
         <p>or use camera</p>
 
-        <!-- CAMERA BUTTON -->
-        <button onclick="startCamera()" class="secondary-btn">
+        <!-- CAMERA BUTTON - uses getUserMedia on desktop, file input on mobile -->
+        <input type="file" id="cameraInput" accept="image/*" capture="environment" style="display: none;" />
+        <button id="openCameraBtn" class="secondary-btn">
           Open Camera
         </button>
 
@@ -110,7 +111,7 @@
 
         <div class="about-box">
           <h3>🔄 How It Works</h3>
-          <p>Upload image → AI model analyzes → Get instant results.</p>
+          <p>Upload image → CNN model analyzes → Get instant results.</p>
         </div>
 
         <div class="about-box">

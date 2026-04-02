@@ -1,5 +1,6 @@
 import os
 import secrets
+import logging
 
 from django.shortcuts import render, redirect
 from django.contrib.auth import authenticate, login, logout
@@ -15,10 +16,12 @@ from django.urls import reverse
 from .models import UserProfile, ScanHistory, PasswordResetToken
 from .ml_model.predictor import predict
 
+logger = logging.getLogger(__name__)
 
-# ─────────────────────────────────────────────
+
+
 #  Authentication views
-# ─────────────────────────────────────────────
+
 
 def index(request):
     """Login / Register page. Redirect to home if already logged in."""
@@ -75,6 +78,9 @@ def register_view(request):
     if User.objects.filter(email=email).exists():
         return JsonResponse({'success': False, 'error': 'Email already registered.'}, status=400)
 
+    if not phone_number.isdigit() or len(phone_number) != 10:
+        return JsonResponse({'success': False, 'error': 'Phone number must be exactly 10 digits.'}, status=400)
+
     # Create user
     user = User.objects.create_user(
         username   = username,
@@ -97,9 +103,9 @@ def logout_view(request):
     return redirect('index')
 
 
-# ─────────────────────────────────────────────
+
 #  Main app views
-# ─────────────────────────────────────────────
+
 
 @login_required
 def home(request):
@@ -165,7 +171,6 @@ def analyze(request):
             'disease_name' : scan.disease_name,
             'confidence'   : scan.confidence_percent(),
             'status'       : scan.status,
-            'scan_id'      : scan.id,
         }
 
         # Add detailed leaf check metadata for debugging and frontend clarity
@@ -180,10 +185,14 @@ def analyze(request):
 
         return JsonResponse(response_data)
 
-    except Exception as e:
+    except Exception:
+        logger.exception("Image analysis failed for user_id=%s", request.user.id)
         scan.status = 'failed'
         scan.save()
-        return JsonResponse({'success': False, 'error': str(e)}, status=500)
+        return JsonResponse(
+            {'success': False, 'error': 'We could not analyze the image right now. Please try again.'},
+            status=500
+        )
 
 
 @login_required
@@ -250,8 +259,12 @@ Plant Disease Detection Team
                 fail_silently=False,
             )
             return JsonResponse({'success': True, 'message': 'If an account exists with this email, you will receive a password reset link.'})
-        except Exception as e:
-            return JsonResponse({'success': False, 'error': f'Failed to send email: {str(e)}'}, status=500)
+        except Exception:
+            logger.exception("Password reset email sending failed for user_id=%s", user.id)
+            return JsonResponse(
+                {'success': False, 'error': 'We could not send the reset email right now. Please try again later.'},
+                status=500
+            )
     
     return render(request, 'password_reset_request.html')
 

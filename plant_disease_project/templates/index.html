@@ -78,6 +78,9 @@
             type="tel"
             name="phoneNumber"
             placeholder="Mobile number"
+            pattern="[0-9]{10}"
+            maxlength="10"
+            oninput="this.value = this.value.replace(/[^0-9]/g, '')"
             required
           />
           <input type="text" name="username" placeholder="Username" required />

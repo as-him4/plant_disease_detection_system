@@ -109,28 +109,59 @@ function hideMenu(){
 
 // image preview 
 const fileInput = document.getElementById("fileInput");
+const cameraInput = document.getElementById("cameraInput");
 const preview   = document.getElementById("preview");
+
+let cameraFile = null;
+
+function handleFileSelect(file, isCamera = false) {
+    if(file){
+        const reader = new FileReader();
+
+        reader.onload = function(e){
+            preview.src           = e.target.result;
+            preview.style.display = "block";
+        }
+
+        reader.readAsDataURL(file);
+        
+        if(isCamera){
+            cameraFile = file;
+            fileInput.value = "";
+        } else {
+            cameraFile = null;
+        }
+    }
+}
 
 if(fileInput && preview){
     fileInput.addEventListener("change", function(){
-        const file = this.files[0];
-
-        if(file){
-            const reader = new FileReader();
-
-            reader.onload = function(e){
-                preview.src           = e.target.result;
-                preview.style.display = "block";
-            }
-
-            reader.readAsDataURL(file);
-            
-            // Clear camera capture when file is uploaded
-            capturedBlob = null;
-        }
+        handleFileSelect(this.files[0], false);
     });
 }
 
+if(cameraInput && preview){
+    cameraInput.addEventListener("change", function(){
+        const file = this.files[0];
+        if(file){
+            handleFileSelect(file, true);
+        }
+        this.value = "";
+    });
+}
+
+const openCameraBtn = document.getElementById("openCameraBtn");
+if(openCameraBtn){
+    openCameraBtn.addEventListener("click", function(){
+        const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+        
+        if(isMobile){
+            cameraInput.click();
+        } else {
+            startCamera();
+        }
+    });
+}
 
 // live camera 
 let cameraStream = null;
@@ -146,15 +177,38 @@ function startCamera() {
     preview.style.display = "none";
     fileInput.value = "";
 
-    navigator.mediaDevices.getUserMedia({ video: true })
+    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+        alert("Camera API is not supported in your browser. Please use the file upload option.");
+        return;
+    }
+
+    if (!window.isSecureContext && window.location.protocol !== "https:") {
+        alert("Camera requires HTTPS. Please access the site over HTTPS or use the file upload option.");
+        return;
+    }
+
+    navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } })
         .then(stream => {
             cameraStream             = stream;
             video.srcObject          = stream;
             video.style.display      = "block";
             captureBtn.style.display = "inline-block";
         })
-        .catch(() => {
-            alert("Camera access denied!");
+        .catch(err => {
+            console.error("Camera error:", err);
+            if (err.name === "NotAllowedError" || err.name === "PermissionDeniedError") {
+                alert("Camera access denied. Please allow camera permissions and try again.");
+            } else if (err.name === "NotFoundError" || err.name === "DevicesNotFoundError") {
+                alert("No camera found on this device.");
+            } else if (err.name === "NotReadableError" || err.name === "TrackStartError") {
+                alert("Camera is already in use by another application.");
+            } else if (err.name === "OverconstrainedError") {
+                alert("Camera does not meet the required constraints.");
+            } else if (err.name === "TypeError") {
+                alert("Camera requires HTTPS. Please access via HTTPS or use file upload.");
+            } else {
+                alert("Unable to access camera: " + err.message);
+            }
         });
 }
 
@@ -192,7 +246,7 @@ async function analyzeImage() {
     const fileInput = document.getElementById("fileInput");
     const preview   = document.getElementById("preview");
 
-    if (!fileInput.files.length && preview.style.display === "none") {
+    if (!fileInput.files.length && !cameraFile && preview.style.display === "none") {
         alert("Please upload or capture an image first.");
         return;
     }
@@ -220,6 +274,8 @@ async function analyzeImage() {
     const formData = new FormData();
     if(fileInput.files.length){
         formData.append("image", fileInput.files[0]);
+    } else if(cameraFile){
+        formData.append("image", cameraFile, "camera_capture.jpg");
     } else if(capturedBlob){
         formData.append("image", capturedBlob, "camera_capture.png");
     }
@@ -238,7 +294,6 @@ async function analyzeImage() {
                     <h3>Analysis Result</h3>
                     <p>Model is still being trained.</p>
                     <p><b>Note:</b> Your image was saved. Results will be available once the model is ready.</p>
-                    <p><small>Scan ID: #${data.scan_id}</small></p>
                 `;
             } else if(data.is_leaf === false || data.disease_name === "Not a leaf") {
                 const errorMsg = data.leaf_error ? `<p style="color:orange;"><small>${data.leaf_error}</small></p>` : '';
@@ -247,12 +302,13 @@ async function analyzeImage() {
                     <p>Please upload an image of a plant leaf.</p>
                     <p><b>Leaf model decision:</b> ${data.leaf_label || 'N/A'} (${data.leaf_confidence ? (data.leaf_confidence * 100).toFixed(1) + '%' : 'N/A'})</p>
                     ${errorMsg}
-                    <p><small>Scan ID: #${data.scan_id}</small></p>
                 `;
             } else {
                 const rec = data.recommendation || {};
+                const isHealthy = data.disease_name.toLowerCase().includes('healthy');
+                const displayName = isHealthy ? data.disease_name.replace(/___healthy/gi, '') : data.disease_name;
                 resultBox.innerHTML = `
-                    <h3>Disease: ${data.disease_name}</h3>
+                    <h3>${isHealthy ? '' : 'Disease: '}${displayName}</h3>
                     <p><b>Confidence:</b> ${data.confidence}</p>
                     
                     <div class="recommendation-box">
@@ -272,8 +328,6 @@ async function analyzeImage() {
                         </div>
                         ` : ''}
                     </div>
-                    
-                    <p><small>Scan ID: #${data.scan_id}</small></p>
                 `;
             }
         } else {
