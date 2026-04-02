@@ -154,7 +154,6 @@ media/
 *.h5
 
 # Sensitive files
-plant_disease_project/plant_disease_project/settings.py
 plant_disease_project/plant_disease_project/settings_local.py
 .env
 secrets.json
